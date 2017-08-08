@@ -1,0 +1,4 @@
+mylang='fr'
+family = 'redraw'
+usernames['redraw']['fr']=u'Bot Ochietti'
+console_encoding = 'utf-8'

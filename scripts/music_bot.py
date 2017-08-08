@@ -15,6 +15,9 @@ from tkinter import *
 experimental = False
 
 def main():
+	settings = music21.environment.UserSettings()
+
+	settings['lilypondPath'] = r'D:\\Apps\\LilyPond\\usr\\bin\\lilypond.exe'
 	root = Tk()
 	recordingGui = RecordingGui(root)
 	root.mainloop()
@@ -164,19 +167,15 @@ class RecordingGui:
 		stream = music21.midi.translate.midiFileToStream(mf)
 		stream.show()
 
-		#Create image from stream
-		# lilyConverter = music21.converter.subConverters.ConverterLilypond()
+		#Create score PNG file
+		conv =  music21.converter.subConverters.ConverterLilypond()
+		scorename = 'new_score'
+		filepath = 'D:/Apps/pywikibot/core/' + scorename
+		conv.write(stream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
 
-		# lilyConverter.
-		stream.write("musicxml", "musicxml.png")
-
+		#Open form window
 		self.newWindow = Toplevel()
 		self.formGui = FormGui(self.newWindow)
-
-	# def openForm(self):
-	# 	self.newWindow = Toplevel()
-	# 	self.formGui = FormGui(self.newWindow)
-
 
 
 class FormGui:
@@ -205,6 +204,10 @@ class FormGui:
 
 		#upload fichier MIDI
 		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn', '-noverify','new_song.mid','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
+
+		#upload fichier score
+		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn', '-noverify','new_score.png','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
+
 
 		webbrowser.open("http://leviolondejos.wiki/index.php?title=Spécial:AjouterDonnées/Enregistrement/" + self.title)
 		#uploadToWiki()

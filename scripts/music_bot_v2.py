@@ -12,7 +12,7 @@ import webbrowser
 import upload
 from tkinter import *
 
-experimental = False
+experimental = True
 
 
 def main():
@@ -22,6 +22,7 @@ def main():
 
 class RecordingGui:
 	def __init__(self, master):
+		time.clock()
 		self.master = master
 		master.title("Record music!")
 
@@ -46,13 +47,22 @@ class RecordingGui:
 		print("start rec!")
 
 		#initialize structures used to record
-		self.previousTime = time.time()
+		self.previousTime = time.clock()
 
 		self.mid = music21.midi.MidiFile()
 		self.mid.ticksPerQuarterNote = 1024
 
+		#initialize track with tempo marking
 		self.track = music21.midi.MidiTrack(0)
+		mm = music21.tempo.MetronomeMark(number=90)
+		events = music21.midi.translate.tempoToMidiEvents(mm)
+
+		self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
+
+		self.track.events.extend(events)
+
 		self.mid.tracks.append(self.track)
+
 
 		self.first=True
 
@@ -61,17 +71,19 @@ class RecordingGui:
 		self.inport.callback =self.saveMyMessage
 
 	def saveMyMessage(self, msg):
-		currentTime = time.time()
+		currentTime = time.clock()
 
 
 		#EXPERIMENTAL VERSION WITH TIMING
 		if (experimental) :
 
-			#7 500 000 = 90bpm in musescore
-			delta = int( mido.second2tick(currentTime - self.previousTime, 1024, 7500000))
-			# if (self.first) :
-			# 	delta = 1024
-			# 	self.first = False
+			#7500 000 = 90bpm in musescore
+			delta = int( mido.second2tick(currentTime - self.previousTime, self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
+			if (self.first) :
+				delta = 2048
+				self.first = False
+			if (delta >3078) :
+				delta = 3078
 			# #rounding to 0, 256, and multiples of 128 thereafter
 			# if delta < 8 :
 			# 	delta = 0
@@ -142,7 +154,7 @@ class RecordingGui:
 		self.mid.write()
 		self.mid.close()
 		stream = music21.midi.translate.midiFileToStream(self.mid)
-		stream.show()
+		#stream.show()
 
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()

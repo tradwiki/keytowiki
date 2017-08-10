@@ -13,7 +13,7 @@ import upload
 from tkinter import *
 
 experimental = False
-laptop = true
+laptop = True
 
 
 def main():
@@ -50,7 +50,7 @@ class RecordingGui:
 		self.previousTime = time.time()
 
 		self.mid = music21.midi.MidiFile()
-		self.mid.ticksPerQuarterNote = 1024
+		self.mid.ticksPerQuarterNote = 2048
 
 		self.track = music21.midi.MidiTrack(0)
 		self.mid.tracks.append(self.track)
@@ -96,7 +96,10 @@ class RecordingGui:
 			if msg.type == 'note_on' : 
 				delta = 0
 			else :
-				delta = 1024
+				delta = 2048
+			if (self.first) :
+				delta = 2048
+				self.first = False
 
 		#DELTA TIME MSG
 		dt = music21.midi.DeltaTime(self.track)

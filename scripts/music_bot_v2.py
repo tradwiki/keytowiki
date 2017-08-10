@@ -13,6 +13,7 @@ import upload
 from tkinter import *
 
 experimental = True
+laptop = True
 
 
 def main():
@@ -159,8 +160,10 @@ class RecordingGui:
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()
 		scorename = 'new_score'
-		filepath = 'D:/Apps/pywikibot/core/' + scorename
-		conv.write(stream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
+		if (laptop) :
+			filepath ='C:/Users/yoann/pywikibot/core/' + scorename
+		else :
+			filepath ='D:/Apps/pywikibot/core/' + scorename		conv.write(stream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
 
 		#Open form window to input title and launch upload
 		self.newWindow = Toplevel()

@@ -50,7 +50,7 @@ class RecordingGui:
 		self.previousTime = time.clock()
 
 		self.mid = music21.midi.MidiFile()
-		self.mid.ticksPerQuarterNote = 1024
+		self.mid.ticksPerQuarterNote = 2048
 
 		#initialize track with tempo marking
 		self.track = music21.midi.MidiTrack(0)
@@ -82,8 +82,8 @@ class RecordingGui:
 			if (self.first) :
 				delta = 2048
 				self.first = False
-			if (delta >3078) :
-				delta = 3078
+			if (delta >8192) :
+				delta = 8192
 			# #rounding to 0, 256, and multiples of 128 thereafter
 			# if delta < 8 :
 			# 	delta = 0

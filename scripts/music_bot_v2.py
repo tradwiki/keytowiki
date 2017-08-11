@@ -75,60 +75,61 @@ class RecordingGui:
 		currentTime = time.clock()
 
 
-		#EXPERIMENTAL VERSION WITH TIMING
-		if (experimental) :
+		if (msg.type == 'note_on' or msg.type =='note_off') :
+			#EXPERIMENTAL VERSION WITH TIMING
+			if (experimental) :
 
-			#convert time difference to ticks using tempo information
-			delta = int( mido.second2tick(currentTime - self.previousTime, self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
+				#convert time difference to ticks using tempo information
+				delta = int( mido.second2tick(currentTime - self.previousTime, self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
 
-			#limit to whole note
-			if (delta > self.mid.ticksPerQuarterNote*4) :
-				delta =  int(self.mid.ticksPerQuarterNote*4)
+				#limit to whole note
+				if (delta > self.mid.ticksPerQuarterNote*4) :
+					delta =  int(self.mid.ticksPerQuarterNote*4)
 
-			#round
-			delta = int (RecordingGui.roundToMultiples(delta,  self.mid.ticksPerQuarterNote/4))
+				#round
+				delta = int (RecordingGui.roundToMultiples(delta,  self.mid.ticksPerQuarterNote/4))
 
-			#SPECIAL CASES
-			#set first time to 1 beat
-			if (self.first) :
-				delta =  int(self.mid.ticksPerQuarterNote)
-				self.first = False
+				#SPECIAL CASES
+				#set first time to 1 beat
+				if (self.first) :
+					delta =  int(self.mid.ticksPerQuarterNote)
+					self.first = False
 
-			#if note_off msg of a very short message, set min duration of 16th note
-			#skip first one because prevnote will be null
-			#note_on msg seem to be delayed automatically by 16th note from eachother by music21, so no need to do that
+				#if note_off msg of a very short message, set min duration of 16th note
+				#skip first one because prevnote will be null
+				#note_on msg seem to be delayed automatically by 16th note from eachother by music21, so no need to do that
+				else :
+					if ((msg.type == 'note_off') and (msg.note == self.prevnote) and (delta == 0)) : 
+						delta =  int(self.mid.ticksPerQuarterNote/4)
+						#print(msg.type)
+
+				#update prevnote for checking for short notes
+				self.prevnote = msg.note
+
+				#for debug
+				#print(delta)
+
+			#FIXED TIMING VERSION
 			else :
-				if ((msg.type == 'note_off') and (msg.note == self.prevnote) and (delta == 0)) : 
-					delta =  int(self.mid.ticksPerQuarterNote/4)
-					#print(msg.type)
+				if msg.type == 'note_on' : 
+					delta = 0
+				else :
+					delta = 1024
 
-			#update prevnote for checking for short notes
-			self.prevnote = msg.note
+			#DELTA TIME MSG
+			dt = music21.midi.DeltaTime(self.track)
+			dt.time = delta
 
-			#for debug
-			#print(delta)
+			self.track.events.append(dt)
 
-		#FIXED TIMING VERSION
-		else :
-			if msg.type == 'note_on' : 
-				delta = 0
-			else :
-				delta = 1024
-
-		#DELTA TIME MSG
-		dt = music21.midi.DeltaTime(self.track)
-		dt.time = delta
-
-		self.track.events.append(dt)
-
-		#NOTE MSG
-		m21msg = music21.midi.MidiEvent(self.track)
-		m21msg.type = msg.type.upper()
-		m21msg.time = None
-		m21msg.pitch = msg.note
-		m21msg.velocity = msg.velocity
-		m21msg.channel = 1
-		self.track.events.append(m21msg)
+			#NOTE MSG
+			m21msg = music21.midi.MidiEvent(self.track)
+			m21msg.type = msg.type.upper()
+			m21msg.time = None
+			m21msg.pitch = msg.note
+			m21msg.velocity = msg.velocity
+			m21msg.channel = 1
+			self.track.events.append(m21msg)
 
 		#update previousTime
 		self.previousTime = currentTime

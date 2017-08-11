@@ -13,8 +13,8 @@ import upload
 from tkinter import *
 
 experimental = True
-laptop = True
-
+laptop = False
+bpm = 90
 
 def main():
 	root = Tk()
@@ -55,7 +55,7 @@ class RecordingGui:
 
 		#initialize track with tempo marking
 		self.track = music21.midi.MidiTrack(0)
-		mm = music21.tempo.MetronomeMark(number=90)
+		mm = music21.tempo.MetronomeMark(number=bpm)
 		events = music21.midi.translate.tempoToMidiEvents(mm)
 
 		self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
@@ -78,27 +78,32 @@ class RecordingGui:
 		#EXPERIMENTAL VERSION WITH TIMING
 		if (experimental) :
 
-			#7500 000 = 90bpm in musescore
+			#convert time difference to ticks using tempo information
 			delta = int( mido.second2tick(currentTime - self.previousTime, self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
-			if (self.first) :
-				delta = 2048
-				self.first = False
-			if (delta >8192) :
-				delta = 8192
-			# #rounding to 0, 256, and multiples of 128 thereafter
-			# if delta < 8 :
-			# 	delta = 0
-			# else :
-			# 	if delta < 256 :
-			# 		delta = 256
-			# 	else:
-			# 		if (delta%128 >=64) : 
-			# 			delta = delta + (128-(delta%128))
-			# 		else :
-			# 			delta = delta - (delta%128)
 
-			# 		if delta > 4096 :
-			# 			delta = 4096
+			#limit to whole note
+			if (delta > self.mid.ticksPerQuarterNote*4) :
+				delta =  int(self.mid.ticksPerQuarterNote*4)
+
+			#round
+			delta = int (RecordingGui.roundToMultiples(delta,  self.mid.ticksPerQuarterNote/4))
+
+			#SPECIAL CASES
+			#set first time to 1 beat
+			if (self.first) :
+				delta =  int(self.mid.ticksPerQuarterNote)
+				self.first = False
+
+			#if note_off msg of a very short message, set min duration of 16th note
+			#skip first one because prevnote will be null
+			#note_on msg seem to be delayed automatically by 16th note from eachother by music21, so no need to do that
+			else :
+				if ((msg.type == 'note_off') and (msg.note == self.prevnote) and (delta == 0)) : 
+					delta =  int(self.mid.ticksPerQuarterNote/4)
+					#print(msg.type)
+
+			#update prevnote for checking for short notes
+			self.prevnote = msg.note
 
 			#for debug
 			print(delta)
@@ -117,19 +122,19 @@ class RecordingGui:
 		self.track.events.append(dt)
 
 		#NOTE MSG
-		me1 = music21.midi.MidiEvent(self.track)
-		me1.type = msg.type.upper()
-		me1.time = None
-		me1.pitch = msg.note
-		me1.velocity = msg.velocity
-		me1.channel = 1
-		self.track.events.append(me1)
+		m21msg = music21.midi.MidiEvent(self.track)
+		m21msg.type = msg.type.upper()
+		m21msg.time = None
+		m21msg.pitch = msg.note
+		m21msg.velocity = msg.velocity
+		m21msg.channel = 1
+		self.track.events.append(m21msg)
 
 		#update previousTime
 		self.previousTime = currentTime
 
 		#for debug
-		print(me1)
+		print(m21msg)
 		
 
 	def recordEnd(self):
@@ -150,25 +155,56 @@ class RecordingGui:
 		self.inport.callback = None
 		self.inport.close()
 
-		#Create MIDI file  from stream
+		#Create MIDI file  from mystream
 		self.mid.open('new_song.mid', 'wb')
 		self.mid.write()
 		self.mid.close()
-		stream = music21.midi.translate.midiFileToStream(self.mid)
-		#stream.show()
+		mystream = music21.midi.translate.midiFileToStream(self.mid)
+		
+		print("Plain mystream:\n")
+		mystream.show('text', addEndTimes=True)
 
-		#Create score PNG file
-		conv =  music21.converter.subConverters.ConverterLilypond()
+		#go through list of events and set end time of eventsto  whevener another event starts
+		firstNote = True
+		for mypart in mystream.elements:
+			for mynote in mypart :
+				if firstNote :
+					firstNote = False
+					prevnote = mynote
+				else:				
+					prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
+					prevnote = mynote
+
+		print("Fixed mystream:\n")
+		mmystream = mystream.makeMeasures()
+		fmmystream = mmystream.makeNotation()
+		fmmystream.show('text', addEndTimes=True)
+
+
+		#compute filepath - TODO: change to cl argument
 		scorename = 'new_score'
 		if (laptop) :
 			filepath ='C:/Users/yoann/pywikibot/core/' + scorename
 		else :
 			filepath ='D:/Apps/pywikibot/core/' + scorename
-		conv.write(stream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
+
+		#Create score PNG file
+		conv =  music21.converter.subConverters.ConverterLilypond()
+		conv.write(fmmystream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
 
 		#Open form window to input title and launch upload
 		self.newWindow = Toplevel()
 		self.formGui = FormGui(self.newWindow)
+
+	#Helper function to round ticks to closest 1/16 note
+	def roundToMultiples(toRound, increment) :
+		if (toRound%increment >= increment/2) : 
+			rounded = toRound + (increment-(toRound%increment))
+		else :
+			rounded = toRound - (toRound%increment)
+
+		#print ('rounding {} to {}'.format(toRound, rounded))
+		return rounded
 
 
 class FormGui:
@@ -206,6 +242,7 @@ class FormGui:
 
 		#close
 		self.master.destroy()
+		
 
 if __name__ == '__main__':
 	main()

@@ -23,7 +23,8 @@ def main():
 
 class RecordingGui:
 	def __init__(self, master):
-		time.clock()
+
+		#time.clock()
 		self.master = master
 		master.title("Record music!")
 
@@ -48,7 +49,7 @@ class RecordingGui:
 		print("start rec!")
 
 		#initialize structures used to record
-		self.previousTime = time.clock()
+		#self.previousTime = time.clock()
 
 		self.mid = music21.midi.MidiFile()
 		self.mid.ticksPerQuarterNote = 2048
@@ -73,15 +74,15 @@ class RecordingGui:
 		print('saving message')
 
 	def saveMyMessage(self, msg):
-		currentTime = time.clock()
-
+		#currentTime = time.clock()
+		#print(currentTime)
 
 		if (msg.type == 'note_on' or msg.type =='note_off') :
 			#EXPERIMENTAL VERSION WITH TIMING
 			if (experimental) :
 
 				#convert time difference to ticks using tempo information
-				delta = int( mido.second2tick(currentTime - self.previousTime, self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
+				delta = int( mido.second2tick(time.perf_counter(), self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
 
 				#limit to whole note
 				if (delta > self.mid.ticksPerQuarterNote*4) :
@@ -133,7 +134,7 @@ class RecordingGui:
 			self.track.events.append(m21msg)
 
 		#update previousTime
-		self.previousTime = currentTime
+		#self.previousTime = currentTime
 
 		#for debug
 		#print(m21msg)

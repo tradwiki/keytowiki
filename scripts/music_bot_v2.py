@@ -69,7 +69,8 @@ class RecordingGui:
 
 		#open ports
 		self.inport = mido.open_input()
-		self.inport.callback =self.saveMyMessage
+		self.inport.callback = self.saveMyMessage
+		print('saving message')
 
 	def saveMyMessage(self, msg):
 		currentTime = time.clock()

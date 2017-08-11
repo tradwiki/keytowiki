@@ -13,7 +13,7 @@ import upload
 from tkinter import *
 
 experimental = True
-laptop = True
+laptop = False
 bpm = 90
 
 def main():
@@ -161,21 +161,54 @@ class RecordingGui:
 		self.mid.close()
 		mystream = music21.midi.translate.midiFileToStream(self.mid)
 		
-		print("Plain mystream:\n")
+		print("Plain :\n")
 		mystream.show('text', addEndTimes=True)
 
-		#go through list of events and set end time of eventsto  whevener another event starts
+		print("Flat :\n")
+		flatstream =  mystream.flat
+		flatstream.show('text', addEndTimes=True)
+
+		print("Just notes:\n")
+		justnotes = flatstream.notesAndRests.stream()
+		justnotes.show('text', addEndTimes=True)
+
+		print("Just notes with chords:\n")
+		justnoteswithchords = justnotes.chordify()
+		justnoteswithchords.show('text', addEndTimes=True)
+
+
+		print("Just notes with chords and rests:\n")
+		justnoteswithchords.makeRests()
+		justnoteswithchords.show('text', addEndTimes=True)
+
+
+		#go through list of events and set end time of events to  whevener another event starts
+		#if two notes start at same time, then they must end at same time
 		firstNote = True
-		for mypart in mystream.elements:
-			for mynote in mypart :
-				if firstNote :
-					firstNote = False
-					prevnote = mynote
-				else:				
-					prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
-					prevnote = mynote
+		prevnotewaschord = False
+		for mynote in justnoteswithchords:
+			if firstNote :
+				firstNote = False
+				prevnote = mynote
+			else:
+				#if two notes start at same time, then they must end at same time )
+				if prevnote.offset == mynote.offset :
+					#take the duration of previous note in chords, ie chords will cut off when their first note is unpressed
+					mynote.duration = prevnote.duration
+					prevnotewaschord = True
+				else:	
+					if prevnotewaschord :
+						mynote.offset = prevnote.offset + prevnote.duration.quarterLength
+					else :
+						prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
+					prevnotewaschord = False
 
-		mystream.show('text', addEndTimes=True)
+				prevnote = mynote
+		
+		print("No overlap:\n")
+		justnoteswithchords.show('text', addEndTimes=True)
+
+		mystream = justnoteswithchords
 
 		print("Fixed mystream:\n")
 		mmystream = mystream.makeMeasures()

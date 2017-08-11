@@ -1,4 +1,4 @@
-import  pywikibot
+import pywikibot
 import music21
 import pagefromfile
 import os

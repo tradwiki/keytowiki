@@ -13,7 +13,7 @@ import upload
 from tkinter import *
 
 experimental = True
-laptop = False
+laptop = True
 bpm = 90
 
 def main():
@@ -106,7 +106,7 @@ class RecordingGui:
 			self.prevnote = msg.note
 
 			#for debug
-			print(delta)
+			#print(delta)
 
 		#FIXED TIMING VERSION
 		else :
@@ -134,7 +134,7 @@ class RecordingGui:
 		self.previousTime = currentTime
 
 		#for debug
-		print(m21msg)
+		#print(m21msg)
 		
 
 	def recordEnd(self):
@@ -174,6 +174,8 @@ class RecordingGui:
 				else:				
 					prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
 					prevnote = mynote
+
+		mystream.show('text', addEndTimes=True)
 
 		print("Fixed mystream:\n")
 		mmystream = mystream.makeMeasures()

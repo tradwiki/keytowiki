@@ -191,7 +191,7 @@ class RecordingGui:
 				firstNote = False
 				prevnote = mynote
 			else:
-				#if two notes start at same time, then they must end at same time )
+				#if two notes start at same time, then they must end at same time
 				if prevnote.offset == mynote.offset :
 					#take the duration of previous note in chords, ie chords will cut off when their first note is unpressed
 					mynote.duration = prevnote.duration
@@ -199,10 +199,11 @@ class RecordingGui:
 				else:	
 					if prevnotewaschord :
 						mynote.offset = prevnote.offset + prevnote.duration.quarterLength
+						prevnotewaschord = False
+
 					else :
 						prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
-					prevnotewaschord = False
-
+				
 				prevnote = mynote
 		
 		print("No overlap:\n")

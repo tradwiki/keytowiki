@@ -132,6 +132,5 @@ class FormGui:
 		#close
 		self.master.destroy()
 		
-s
 if __name__ == '__main__':
 	main()

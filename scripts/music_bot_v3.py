@@ -56,11 +56,11 @@ class RecordingGui:
 
 		for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 			if (recordingNow) :
-		   	 	data = self.stream.read(CHUNK)
-		    	self.frames.append(data)
-		    else:
-		    	print('Recording stopped')
-		    	break
+				data = self.stream.read(CHUNK)
+				self.frames.append(data)
+			else:
+				print('Recording stopped')
+				break
 
 		print("Recording exceeded max time: " + RECORD_SECONDS/60 + " minutes")
 
@@ -132,6 +132,6 @@ class FormGui:
 		#close
 		self.master.destroy()
 		
-
+s
 if __name__ == '__main__':
 	main()

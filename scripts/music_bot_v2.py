@@ -13,7 +13,7 @@ import upload
 from tkinter import *
 
 experimental = True
-laptop = False
+laptop = True
 bpm = 90
 
 def main():
@@ -69,9 +69,13 @@ class RecordingGui:
 		self.first=True
 
 		#open ports
-		self.inport = mido.open_input()
+		portnames = mido.get_input_names()
+		print(portnames)
+		portname = [i for i in portnames if "loopMIDI" in i][-1]
+
+		self.inport = mido.open_input(name=portname)
 		self.inport.callback = self.saveMyMessage
-		print('saving message')
+		print(portname)
 
 	def saveMyMessage(self, msg):
 		#currentTime = time.clock()
@@ -137,7 +141,7 @@ class RecordingGui:
 		#self.previousTime = currentTime
 
 		#for debug
-		#print(m21msg)
+		print(m21msg)
 		
 
 	def recordEnd(self):

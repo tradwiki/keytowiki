@@ -1,0 +1,54 @@
+==Description==
+
+Python script using the pywikibot framework that streamlines audio uploading to http://leviolondejos.wiki/ via the following
+functionnalities:
+
+  1. Recording midi input from a virtual midi port (user must install 3rd party software to connect midi instrument to this port,
+  see below)
+  2. Automatically creating score image (.png) and midi file using music21 library
+  3. Automatically uploading above files to the wiki along with semantic annotations
+  4. Open form in browser to create page with additional information about the recording
+
+==Dependencies==
+
+The software requires the following packages to be installed on your system:
+  
+  *python 3.4 or above with the following libraries:
+    **music21
+    **mido
+    **python-rtmidi
+    
+  *lilypond
+  
+  *pywikibot (tested on current nightly release with commit number 4bb76aa37d99, latest stable verions(2.0rc3 ) does not work
+  because of upload.py script not having the '-always' option yet. Once this option is included in stable release, you should
+  use that one.)
+
+==Intallation and usage==
+
+  Requirements: 
+    The script has been tested in Ubuntu 16.04 and Windows 7. As far as I know, the required dependencies are 
+    available in Mac OS and none of the functions used in the script itself are platform dependent, so it should be possible 
+    to run in Mac as well. 
+  
+  Once the above dependencies are installed, paste the files in this git into the pywikibot installation folder (merge folders
+  where required).You can then run the script from the command line by going into your pywikibot installation folder, logging 
+  in the bot with the following command (note: this relies on configuration files in the installation folder that are included 
+  in this github, but that need to be adapted for each bot user account and wiki, see pywikibot documentation on installing for
+  third party wikis): 
+  
+    "python3 pwb.py login" 
+  
+  and then invoking the music_bot.py script with the following command:
+  
+    "python3 pwb.py music_bot"
+   
+  ==Disclaimer==
+  
+    Newby programmer at work. Feel free to tell me where my certainly numerous errors are to be found.
+    I also don't know anything about licenses, but feel free to do anything you want with my code, located in 
+    "/scripts/music_bot.py" and "/scripts/music_bot_analog.py".
+  
+
+
+  

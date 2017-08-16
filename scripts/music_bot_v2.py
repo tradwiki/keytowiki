@@ -13,9 +13,20 @@ import upload
 from tkinter import *
 
 experimental = True
-laptop = True
+
+#Soon to be removed...
+#Need to test linux functionnality on windows
+#and remove all hardcoded paths if it works
+laptop = False 
+
+linux = True
 bpm = 90
-portkeyword = ['loopMIDI', 'MIDI']
+startpath =  os.getcwd() + '/'
+
+#Soon to be removed...
+#Need to add port selection to the GUI
+portkeywords = ['loopMIDI', 'Midi']
+
 
 def main():
 	root = Tk()
@@ -25,7 +36,6 @@ def main():
 class RecordingGui:
 	def __init__(self, master):
 
-		#time.clock()
 		self.master = master
 		master.title("Record music!")
 
@@ -39,31 +49,27 @@ class RecordingGui:
 		# self.label = Label(master, text="Recording time: 00:00")
 		# self.label.pack()
 
-		#Seperate button for upload
-		# self.greet_button = Button(master, text="Upload", command=self.openForm)
-		# self.greet_button.pack()
-
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()
 
 	def recordStart(self):
 		print("start rec!")
-
-		#initialize structures used to record
-		#self.previousTime = time.clock()
-
+		
 		self.mid = music21.midi.MidiFile()
 		self.mid.ticksPerQuarterNote = 2048
 
-		#initialize track with tempo marking
 		self.track = music21.midi.MidiTrack(0)
+
 		mm = music21.tempo.MetronomeMark(number=bpm)
+
+		#create list of tempo indicating events
 		events = music21.midi.translate.tempoToMidiEvents(mm)
 
+		#read mspqn from create events
 		self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
 
+		#link structures
 		self.track.events.extend(events)
-
 		self.mid.tracks.append(self.track)
 
 
@@ -88,9 +94,6 @@ class RecordingGui:
 
 
 	def saveMyMessage(self, msg):
-		#currentTime = time.clock()
-		#print(currentTime)
-
 		if (msg.type == 'note_on' or msg.type =='note_off') :
 			#EXPERIMENTAL VERSION WITH TIMING
 			if (experimental) :
@@ -125,7 +128,7 @@ class RecordingGui:
 				#for debug
 				#print(delta)
 
-			#FIXED TIMING VERSION
+			#FIXED TIMING VERSION (EXPERIMENTAL = False)
 			else :
 				if msg.type == 'note_on' : 
 					delta = 0
@@ -147,9 +150,6 @@ class RecordingGui:
 			m21msg.channel = 1
 			self.track.events.append(m21msg)
 
-		#update previousTime
-		#self.previousTime = currentTime
-
 		#for debug
 		print(m21msg)
 		
@@ -164,7 +164,7 @@ class RecordingGui:
 		me = music21.midi.MidiEvent(self.track)
 		me.type = "END_OF_TRACK"
 		me.channel = 1
-		me.data = '' # must set data to empty string
+		me.data = ''
 		self.track.events.append(me)
 		print(self.mid)
 
@@ -236,10 +236,14 @@ class RecordingGui:
 
 		#compute filepath - TODO: change to cl argument
 		scorename = 'new_score'
-		if (laptop) :
-			filepath ='C:/Users/yoann/pywikibot/core/' + scorename
+		if linux :
+			filepath = startpath + scorename
+			print('using fp : ' + filepath)
 		else :
-			filepath ='D:/Apps/pywikibot/core/' + scorename
+			if (laptop) :
+				filepath ='C:/Users/yoann/pywikibot/core/' + scorename
+			else :
+				filepath ='D:/Apps/pywikibot/core/' + scorename
 
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()
@@ -299,44 +303,3 @@ class FormGui:
 
 if __name__ == '__main__':
 	main()
-
-
-#FOR ALTERNATIVE METHOD
-# def uploadToWiki():
-# 	path = os.path.abspath('../scripts/dict.txt')
-# 	f = open(path, 'w')
-# 	f.write(
-# 		"""xxxx
-# 		'''Upload test page'''
-# 		{{Interprétation
-# 		|A la partition -> Nom du fichier PDF/PNG du score uploadé
-# 		|A le fichier midi -> Nom du fichier MID uploadé
-# 		|A la description de l interprétation -> "Enregistré pendant WikiMania 2017"
-# 		}}
-# 		{{Interprète d une interprétation
-# 		|A l interprète -> GUI:Interprète
-# 		|Joue de l instrument -> GUI:Instrument
-# 		}}
-# 		{{Interprétation B}}
-# 		{{Morceau d une interprétation
-# 		|A le morceau interprété -> GUI:Morceau
-# 		|Est joué dans la tonalité -> Tonalité de music21
-# 		|A la métrique musicale -> Time signa9ture de music21
-# 		|A le bpm -> BPM moyen de music21(?)
-# 		}}
-# 		{{Interprétation C}}
-
-# 		<score lang="ABC">
-# 		X:1
-# 		M:C
-# 		L:1/4
-# 		K:C
-# 		C, D, E, F,|G, A, B, C|D E F G|A B c d|
-# 		e f g a|b c' d' e'|f' g' a' b'|]
-# 		</score>
-# 		yyyy"""
-# 		)
-# 	f.close()
-
-# 	pagefromfile.main('-begin:xxxx','-end:yyyy', '-notitle', '-force') #REMOVE FORCE AFTER TESTING
-

@@ -15,6 +15,7 @@ from tkinter import *
 experimental = True
 laptop = True
 bpm = 90
+portkeyword = 'loopMIDI'
 
 def main():
 	root = Tk()
@@ -71,11 +72,21 @@ class RecordingGui:
 		#open ports
 		portnames = mido.get_input_names()
 		print(portnames)
-		portname = [i for i in portnames if "loopMIDI" in i][-1]
+		
+		#TODO: add way to choose port from gui
+		filteredportnames = [i for i in portnames if portkeyword in i]
+
+		#choose last port from list of available, this is bad behaviour...
+		if len(filteredportnames) > 0 :
+			portname = filteredportnames[-1]
+		else:
+			print('Closing application : No available ports')
+			self.master.quit()
 
 		self.inport = mido.open_input(name=portname)
+		print('Using port : ' + portname)
+
 		self.inport.callback = self.saveMyMessage
-		print(portname)
 
 	def saveMyMessage(self, msg):
 		#currentTime = time.clock()

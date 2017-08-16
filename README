@@ -31,33 +31,46 @@ The software requires the following packages to be installed on your system:
     as well. 
     
     2. Included configuration files from the piwikibot framework (user-config.py and .family files) are defined for an account
-    on http://leviolondejos.wiki/, but you won't be able to run the bot there unless you have the password for the account.
-    To get the bot to upload to our wiki (http://leviolondejos.wiki/), contact us using the contact information available at
-    http://www.procedurable.com/ and if you're active enough in the community, we'll create a bot account for you. You'll then
-    be able to modify the configuration files to work with the new account (see instructions at 
-    https://www.mediawiki.org/wiki/Manual:Pywikibot/Third-party_Wiki_Quick_Start).
+    on http://leviolondejos.wiki/, but you won't be able to run the bot there unless you have the password for the account. So
+    you've got two options: 
+      
+      2.a Upload to http://leviolondejos.wiki/
+        To get the bot to upload to our wiki (http://leviolondejos.wiki/), contact us using the contact information available at
+        http://www.procedurable.com/ and if you're active enough in the community, we'll create a bot account for you. You'll 
+        then be able to modify the user-config.py file to work with the new account (see instructions at 
+        https://www.mediawiki.org/wiki/Manual:Pywikibot/Third-party_Wiki_Quick_Start).
 
-      2.1. If you're counting on running the bot for your own wiki (ie NOT on violondejos.wiki), you will have to modify to
-      import or implement the wiki templates used by the bot, or change/remove them from in the script itself. I plan to make
-      these defined in a config file in the future to make this simpler. Here is a list of the currently used templates, forms
-      and their attributes that need to exist on the wiki in case you'd like to implement them yourself (yes, they are in
-      french):
+      2.b Upload to your own wiki
+        If you're counting on running the bot for your own wiki (ie NOT on violondejos.wiki), you will have to modify both
+        configuration files, changing user-config.py and creating a new .family file for your own wiki and user account (see
+        instructions at https://www.mediawiki.org/wiki/Manual:Pywikibot/Third-party_Wiki_Quick_Start). In addition, since the
+        bot inserts templates in the file pages and opens a form page, you will need to import or implement the wiki templates
+        used by the bot, or change/remove them from in the script itself. You can export the required pages from our wiki by
+        using Special:Export and the "Liste pour exportation" section of the  pages :
+        
+          http://leviolondejos.wiki/index.php?title=Classe:Enregistrement
+          http://leviolondejos.wiki/index.php?title=Classe:Fichier
+          
+        I plan to make the used template defined in a config file in the future to make this simpler. Here is a list of the
+        currently used templates, forms and their attributes that need to exist on the wiki in case you'd like to implement
+        them yourself (yes, they are in french):
 
-        Template: "Fichier"
-          Attributes:
-            "Concerne"
-            "Est un fichier du type"
-          Called by bot using: 
-            {{Fichier
-            |Concerne=<given page title>
-            |Est un fichier du type=<"Score" or "MIDI" depending on file type>
-            }}
+          Template: "Fichier"
+            Attributes:
+              "Concerne"
+              "Est un fichier du type"
+            Called by bot using: 
+              {{Fichier
+              |Concerne=<given page title>
+              |Est un fichier du type=<"Score" or "MIDI" depending on file type>
+              }}
 
-        Form: "Enregistrement"
-          Attributes:
-            <None yet, implement whatever you'd like to collect additional information about the recording as its page is
-            created (e.g. artist name, venue, key, time signature, etc)>
-            
+          Form: "Enregistrement"
+            Attributes:
+              <None yet, implement whatever you'd like to collect additional information about the recording as its page is
+              created (e.g. artist name, venue, key, time signature, etc), you can also give change which form the script opens
+              in the global variable "formname" at the top of music_bot>
+
     3. Midi recording functionnalities rely on a preestablished midi connection of your device (midi controller) to the
     correct midi port. When you click the 'Record' button, the script prints to the terminal indicating which port it is
     listening to (I plan to make the port choosable in the future).The script currently looks for ports with "Midi" or
@@ -80,15 +93,13 @@ The software requires the following packages to be installed on your system:
   where required).You can then run the script from the command line by going into your pywikibot installation folder, logging 
   in the bot with the following command (note: this relies on configuration files in the installation folder that are included 
   in this github, but that need to be adapted for each bot user account and wiki, see pywikibot documentation on installing for
-  third party wikis): 
+  third party wikis and requirement section 2): 
   
     "python3 pwb.py login" 
   
   and then invoking the music_bot.py script with the following command:
   
     "python3 pwb.py music_bot"
-    
-   
    
 ==Disclaimer==
   

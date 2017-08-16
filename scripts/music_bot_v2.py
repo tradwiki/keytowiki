@@ -15,6 +15,9 @@ from tkinter import *
 experimental = True
 bpm = 90
 startpath =  os.getcwd()
+songname = 'new_song.mid'
+scorename = 'new_score.png'
+
 
 #Soon to be removed...
 #Need to add port selection to the GUI
@@ -166,7 +169,7 @@ class RecordingGui:
 		self.inport.close()
 
 		#Create MIDI file  from mystream
-		songname = 'new_song.mid'
+
 		filepath = os.path.join(startpath, songname)
 		self.mid.open(filepath, 'wb')
 		self.mid.write()
@@ -230,13 +233,12 @@ class RecordingGui:
 
 
 		#compute filepath - TODO: change to cl argument
-		scorename = 'new_score'
 		filepath = os.path.join(startpath, scorename)
 		#print('creating score at : ' + filepath + '.png')
 
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()
-		conv.write(fmmystream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
+		conv.write(fmmystream, fmt = 'lilypond', fp=''.join(filepath.split('.')[:-1]), subformats = ['png'])
 
 		#Open form window to input title and launch upload
 		self.newWindow = Toplevel()
@@ -278,10 +280,10 @@ class FormGui:
 		self.title = self.titleString.get()
 
 		#upload fichier MIDI
-		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn', '-noverify','new_song.mid','-putthrottle:1','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
+		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn', '-noverify','-putthrottle:1',songname,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
 
 		#upload fichier score
-		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn', '-noverify','new_score.png','-putthrottle:1','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
+		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn', '-noverify','-putthrottle:1',scorename,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
 
 		#Open page on wiki to input more info
 		webbrowser.open("http://leviolondejos.wiki/index.php?title=Spécial:AjouterDonnées/Enregistrement/" + self.title)

@@ -13,15 +13,8 @@ import upload
 from tkinter import *
 
 experimental = True
-
-#Soon to be removed...
-#Need to test linux functionnality on windows
-#and remove all hardcoded paths if it works
-laptop = False 
-
-linux = True
 bpm = 90
-startpath =  os.getcwd() + '/'
+startpath =  os.getcwd()
 
 #Soon to be removed...
 #Need to add port selection to the GUI
@@ -173,7 +166,9 @@ class RecordingGui:
 		self.inport.close()
 
 		#Create MIDI file  from mystream
-		self.mid.open('new_song.mid', 'wb')
+		songname = 'new_song.mid'
+		filepath = os.path.join(startpath, songname)
+		self.mid.open(filepath, 'wb')
 		self.mid.write()
 		self.mid.close()
 		mystream = music21.midi.translate.midiFileToStream(self.mid)
@@ -236,14 +231,8 @@ class RecordingGui:
 
 		#compute filepath - TODO: change to cl argument
 		scorename = 'new_score'
-		if linux :
-			filepath = startpath + scorename
-			print('using fp : ' + filepath)
-		else :
-			if (laptop) :
-				filepath ='C:/Users/yoann/pywikibot/core/' + scorename
-			else :
-				filepath ='D:/Apps/pywikibot/core/' + scorename
+		filepath = os.path.join(startpath, scorename)
+		#print('creating score at : ' + filepath + '.png')
 
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()

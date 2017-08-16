@@ -280,10 +280,10 @@ class FormGui:
 		self.title = self.titleString.get()
 
 		#upload fichier MIDI
-		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn', '-noverify','-putthrottle:1',songname,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
+		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn','-putthrottle:1',songname,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
 
 		#upload fichier score
-		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn', '-noverify','-putthrottle:1',scorename,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
+		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn','-putthrottle:1',scorename,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
 
 		#Open page on wiki to input more info
 		webbrowser.open("http://leviolondejos.wiki/index.php?title=Spécial:AjouterDonnées/Enregistrement/" + self.title)

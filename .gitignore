@@ -2,6 +2,8 @@
 *
 # Don't ignore directories, so we can recurse into them
 !*/
+externals/
+scripts/i18n/
 # Don't ignore .gitignore and *.foo files
 !.gitignore
 !scripts/music_bot.py

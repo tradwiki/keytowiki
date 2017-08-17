@@ -1,15 +1,21 @@
-# Ignore everything
-*
-
-# But not these files...
-!.gitignore
-!music_bot.py
-!music_bot_analog.py
-!README
-!user-config.py
-!user-config.py.redraw
-!redraw_family.py
-!vdj_familiy.py
-
-# ...even if they are in subdirectories
-!*/
+throttle.ctrl
+pywikibot.lwp
+user-*.py
+*.bak
+*.pyc
+*.pyo
+*.*~
+/.tox
+/*.egg
+/data*
+logs*
+*apicache*
+*pycache*
+/cache/*
+.cache
+.idea
+pywikibot.egg-info/
+pywikibot/families/
+build
+dist
+docs/_build/

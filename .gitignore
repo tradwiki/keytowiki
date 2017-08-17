@@ -4,6 +4,8 @@
 !*/
 externals/
 scripts/i18n/
+scripts/archive/
+scripts/maintenance/
 # Don't ignore .gitignore and *.foo files
 !.gitignore
 !scripts/music_bot.py

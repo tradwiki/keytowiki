@@ -1,4 +1,4 @@
-import  pywikibot
+import pywikibot
 import music21
 import pagefromfile
 import os
@@ -12,8 +12,16 @@ import webbrowser
 import upload
 from tkinter import *
 
-experimental = False
-laptop = True
+experimental = True
+bpm = 90
+startpath =  os.getcwd()
+songname = 'new_song.mid'
+scorename = 'new_score.png'
+
+
+#Soon to be removed...
+#Need to add port selection to the GUI
+portkeywords = ['loopMIDI', 'Midi']
 
 
 def main():
@@ -23,6 +31,7 @@ def main():
 
 class RecordingGui:
 	def __init__(self, master):
+
 		self.master = master
 		master.title("Record music!")
 
@@ -36,91 +45,109 @@ class RecordingGui:
 		# self.label = Label(master, text="Recording time: 00:00")
 		# self.label.pack()
 
-		#Seperate button for upload
-		# self.greet_button = Button(master, text="Upload", command=self.openForm)
-		# self.greet_button.pack()
-
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()
 
 	def recordStart(self):
 		print("start rec!")
-
-		#initialize structures used to record
-		self.previousTime = time.time()
-
+		
 		self.mid = music21.midi.MidiFile()
 		self.mid.ticksPerQuarterNote = 2048
 
 		self.track = music21.midi.MidiTrack(0)
+
+		mm = music21.tempo.MetronomeMark(number=bpm)
+
+		#create list of tempo indicating events
+		events = music21.midi.translate.tempoToMidiEvents(mm)
+
+		#read mspqn from create events
+		self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
+
+		#link structures
+		self.track.events.extend(events)
 		self.mid.tracks.append(self.track)
+
 
 		self.first=True
 
 		#open ports
-		self.inport = mido.open_input()
-		self.inport.callback =self.saveMyMessage
+		portnames = mido.get_input_names()
+		print(portnames)
+		
+		#TODO: add way to choose port from gui
+		filteredportnames = [i for i in portnames if True in [portkeyword in i for portkeyword in portkeywords]]
+
+		#choose last port from list of available, this is bad behaviour...
+		if len(filteredportnames) > 0 :
+			portname = filteredportnames[-1]
+			self.inport = mido.open_input(name=portname)
+			self.inport.callback = self.saveMyMessage
+			print('Using port : ' + portname)
+		else:
+			print('Closing application : No available ports')
+			self.master.quit()
+
 
 	def saveMyMessage(self, msg):
-		currentTime = time.time()
+		if (msg.type == 'note_on' or msg.type =='note_off') :
+			#EXPERIMENTAL VERSION WITH TIMING
+			if (experimental) :
 
+				#convert time difference to ticks using tempo information
+				delta = int( mido.second2tick(time.perf_counter(), self.mid.ticksPerQuarterNote , self.microSecondsPerQuarterNote))
 
-		#EXPERIMENTAL VERSION WITH TIMING
-		if (experimental) :
+				#limit to whole note
+				if (delta > self.mid.ticksPerQuarterNote*4) :
+					delta =  int(self.mid.ticksPerQuarterNote*4)
 
-			#7 500 000 = 90bpm in musescore
-			delta = int( mido.second2tick(currentTime - self.previousTime, 1024, 7500000))
-			# if (self.first) :
-			# 	delta = 1024
-			# 	self.first = False
-			# #rounding to 0, 256, and multiples of 128 thereafter
-			# if delta < 8 :
-			# 	delta = 0
-			# else :
-			# 	if delta < 256 :
-			# 		delta = 256
-			# 	else:
-			# 		if (delta%128 >=64) : 
-			# 			delta = delta + (128-(delta%128))
-			# 		else :
-			# 			delta = delta - (delta%128)
+				#round
+				delta = int (RecordingGui.roundToMultiples(delta,  self.mid.ticksPerQuarterNote/4))
 
-			# 		if delta > 4096 :
-			# 			delta = 4096
+				#SPECIAL CASES
+				#set first time to 1 beat
+				if (self.first) :
+					delta =  int(self.mid.ticksPerQuarterNote)
+					self.first = False
 
-			#for debug
-			print(delta)
+				#if note_off msg of a very short message, set min duration of 16th note
+				#skip first one because prevnote will be null
+				#note_on msg seem to be delayed automatically by 16th note from eachother by music21, so no need to do that
+				else :
+					if ((msg.type == 'note_off') and (msg.note == self.prevnote) and (delta == 0)) : 
+						delta =  int(self.mid.ticksPerQuarterNote/4)
+						#print(msg.type)
 
-		#FIXED TIMING VERSION
-		else :
-			if msg.type == 'note_on' : 
-				delta = 0
+				#update prevnote for checking for short notes
+				self.prevnote = msg.note
+
+				#for debug
+				#print(delta)
+
+			#FIXED TIMING VERSION (EXPERIMENTAL = False)
 			else :
-				delta = 2048
-			if (self.first) :
-				delta = 2048
-				self.first = False
+				if msg.type == 'note_on' : 
+					delta = 0
+				else :
+					delta = 1024
 
-		#DELTA TIME MSG
-		dt = music21.midi.DeltaTime(self.track)
-		dt.time = delta
+			#DELTA TIME MSG
+			dt = music21.midi.DeltaTime(self.track)
+			dt.time = delta
 
-		self.track.events.append(dt)
+			self.track.events.append(dt)
 
-		#NOTE MSG
-		me1 = music21.midi.MidiEvent(self.track)
-		me1.type = msg.type.upper()
-		me1.time = None
-		me1.pitch = msg.note
-		me1.velocity = msg.velocity
-		me1.channel = 1
-		self.track.events.append(me1)
-
-		#update previousTime
-		self.previousTime = currentTime
+			#NOTE MSG
+			m21msg = music21.midi.MidiEvent(self.track)
+			m21msg.type = msg.type.upper()
+			m21msg.time = None
+			m21msg.pitch = msg.note
+			m21msg.velocity = msg.velocity
+			m21msg.channel = 1
+			self.track.events.append(m21msg)
 
 		#for debug
-		print(me1)
+		print(m21msg)
 		
 
 	def recordEnd(self):
@@ -133,7 +160,7 @@ class RecordingGui:
 		me = music21.midi.MidiEvent(self.track)
 		me.type = "END_OF_TRACK"
 		me.channel = 1
-		me.data = '' # must set data to empty string
+		me.data = ''
 		self.track.events.append(me)
 		print(self.mid)
 
@@ -141,25 +168,91 @@ class RecordingGui:
 		self.inport.callback = None
 		self.inport.close()
 
-		#Create MIDI file  from stream
-		self.mid.open('new_song.mid', 'wb')
+		#Create MIDI file  from mystream
+
+		filepath = os.path.join(startpath, songname)
+		self.mid.open(filepath, 'wb')
 		self.mid.write()
 		self.mid.close()
-		stream = music21.midi.translate.midiFileToStream(self.mid)
-		stream.show()
+		mystream = music21.midi.translate.midiFileToStream(self.mid)
+		
+		print("Plain :\n")
+		mystream.show('text', addEndTimes=True)
+
+		print("Flat :\n")
+		flatstream =  mystream.flat
+		flatstream.show('text', addEndTimes=True)
+
+		print("Just notes:\n")
+		justnotes = flatstream.notesAndRests.stream()
+		justnotes.show('text', addEndTimes=True)
+
+		print("Just notes with chords:\n")
+		justnoteswithchords = justnotes.chordify()
+		justnoteswithchords.show('text', addEndTimes=True)
+
+
+		print("Just notes with chords and rests:\n")
+		justnoteswithchords.makeRests()
+		justnoteswithchords.show('text', addEndTimes=True)
+
+
+		#go through list of events and set end time of events to  whevener another event starts
+		#if two notes start at same time, then they must end at same time
+		firstNote = True
+		prevnotewaschord = False
+		for mynote in justnoteswithchords:
+			if firstNote :
+				firstNote = False
+				prevnote = mynote
+			else:
+				#if two notes start at same time, then they must end at same time
+				if prevnote.offset == mynote.offset :
+					#take the duration of previous note in chords, ie chords will cut off when their first note is unpressed
+					mynote.duration = prevnote.duration
+					prevnotewaschord = True
+				else:	
+					if prevnotewaschord :
+						mynote.offset = prevnote.offset + prevnote.duration.quarterLength
+						prevnotewaschord = False
+
+					else :
+						prevnote.duration = music21.duration.Duration(mynote.offset - prevnote.offset)
+				
+				prevnote = mynote
+		
+		print("No overlap:\n")
+		justnoteswithchords.show('text', addEndTimes=True)
+
+		mystream = justnoteswithchords
+
+		print("Fixed mystream:\n")
+		mmystream = mystream.makeMeasures()
+		fmmystream = mmystream.makeNotation()
+		fmmystream.show('text', addEndTimes=True)
+
+
+		#compute filepath - TODO: change to cl argument
+		filepath = os.path.join(startpath, scorename)
+		#print('creating score at : ' + filepath + '.png')
 
 		#Create score PNG file
 		conv =  music21.converter.subConverters.ConverterLilypond()
-		scorename = 'new_score'
-		if (laptop) :
-			filepath ='C:/Users/yoann/pywikibot/core/' + scorename
-		else :
-			filepath ='D:/Apps/pywikibot/core/' + scorename
-		conv.write(stream, fmt = 'lilypond', fp=filepath, subformats = ['png'])
+		conv.write(fmmystream, fmt = 'lilypond', fp=''.join(filepath.split('.')[:-1]), subformats = ['png'])
 
 		#Open form window to input title and launch upload
 		self.newWindow = Toplevel()
 		self.formGui = FormGui(self.newWindow)
+
+	#Helper function to round ticks to closest 1/16 note
+	def roundToMultiples(toRound, increment) :
+		if (toRound%increment >= increment/2) : 
+			rounded = toRound + (increment-(toRound%increment))
+		else :
+			rounded = toRound - (toRound%increment)
+
+		#print ('rounding {} to {}'.format(toRound, rounded))
+		return rounded
 
 
 class FormGui:
@@ -187,57 +280,17 @@ class FormGui:
 		self.title = self.titleString.get()
 
 		#upload fichier MIDI
-		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn', '-noverify','new_song.mid','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
+		upload.main('-always','-filename:' + self.title + '.mid', '-ignorewarn','-putthrottle:1',songname,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=MIDI}}''')
 
 		#upload fichier score
-		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn', '-noverify','new_score.png','''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
+		upload.main('-always','-filename:' + self.title + '.png', '-ignorewarn','-putthrottle:1',scorename,'''{{Fichier|Concerne=''' + self.title +'''|Est un fichier du type=Score}}''')
 
 		#Open page on wiki to input more info
 		webbrowser.open("http://leviolondejos.wiki/index.php?title=Spécial:AjouterDonnées/Enregistrement/" + self.title)
 
 		#close
 		self.master.destroy()
+		
 
 if __name__ == '__main__':
 	main()
-
-
-#FOR ALTERNATIVE METHOD
-# def uploadToWiki():
-# 	path = os.path.abspath('../scripts/dict.txt')
-# 	f = open(path, 'w')
-# 	f.write(
-# 		"""xxxx
-# 		'''Upload test page'''
-# 		{{Interprétation
-# 		|A la partition -> Nom du fichier PDF/PNG du score uploadé
-# 		|A le fichier midi -> Nom du fichier MID uploadé
-# 		|A la description de l interprétation -> "Enregistré pendant WikiMania 2017"
-# 		}}
-# 		{{Interprète d une interprétation
-# 		|A l interprète -> GUI:Interprète
-# 		|Joue de l instrument -> GUI:Instrument
-# 		}}
-# 		{{Interprétation B}}
-# 		{{Morceau d une interprétation
-# 		|A le morceau interprété -> GUI:Morceau
-# 		|Est joué dans la tonalité -> Tonalité de music21
-# 		|A la métrique musicale -> Time signa9ture de music21
-# 		|A le bpm -> BPM moyen de music21(?)
-# 		}}
-# 		{{Interprétation C}}
-
-# 		<score lang="ABC">
-# 		X:1
-# 		M:C
-# 		L:1/4
-# 		K:C
-# 		C, D, E, F,|G, A, B, C|D E F G|A B c d|
-# 		e f g a|b c' d' e'|f' g' a' b'|]
-# 		</score>
-# 		yyyy"""
-# 		)
-# 	f.close()
-
-# 	pagefromfile.main('-begin:xxxx','-end:yyyy', '-notitle', '-force') #REMOVE FORCE AFTER TESTING
-

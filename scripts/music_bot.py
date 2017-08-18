@@ -91,7 +91,7 @@ class RecordingGui:
 		#open selected
 		self.inport = mido.open_input(name=self.portchoice.get())
 		self.inport.callback = self.saveMyMessage
-		print('switching ports to : ' self.portchoice.get() )
+		print('switching ports to : ' + self.portchoice.get() )
 
 	def whatsthetime(self, starting):
 		if self.recording == True:

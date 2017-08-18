@@ -17,8 +17,8 @@ import argparse
 
 experimental = True
 bpm = 90
-songname = 'new_song.mid'
-scorename = 'new_score.png'
+songname = 'temp.mid'
+scorename = 'temp.png'
 
 
 #Soon to be removed...

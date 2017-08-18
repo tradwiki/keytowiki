@@ -58,9 +58,6 @@ class RecordingGui:
 		portname = None
 		if len(filteredportnames) > 0 :
 			portname = filteredportnames[-1]
-			self.inport = mido.open_input(name=portname)
-			self.inport.callback = self.saveMyMessage
-			print('Opened port : ' + portname)
  
 		self.portchoice = StringVar(self.master)
 	
@@ -121,6 +118,7 @@ class RecordingGui:
 			#open selected port
 			self.inport = mido.open_input(name=self.portchoice.get())
 			self.inport.callback = self.saveMyMessage
+			print('Opened port : ' + self.portchoice.get())
 
 			self.mid = music21.midi.MidiFile()
 			self.mid.ticksPerQuarterNote = 2048

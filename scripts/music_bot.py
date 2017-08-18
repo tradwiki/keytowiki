@@ -39,8 +39,8 @@ class RecordingGui:
 		
 		#Chronometer
 		self.printedtime = StringVar()
-		self.label = Label(master, textvariable=self.printedtime)
-		self.label.pack()
+		self.timelabel = Label(master, textvariable=self.printedtime)
+		self.timelabel.pack()
 
 		self.start_button = Button(master, text="Start recording", command=self.recordStart)
 		self.start_button.pack()

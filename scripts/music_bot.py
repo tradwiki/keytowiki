@@ -40,13 +40,13 @@ class RecordingGui:
 		#Chronometer
 		self.printedtime = StringVar()
 		self.timelabel = Label(master, textvariable=self.printedtime)
-		self.timelabel.pack()
+		self.timelabel.grid()
 
 		self.start_button = Button(master, text="Start recording", command=self.recordStart)
-		self.start_button.pack()
+		self.start_button.grid()
 
 		self.end_button = Button(master, text="End recording", command=self.recordEnd)
-		self.end_button.pack()
+		self.end_button.grid()
 
 		#Port selection
 		portnames = mido.get_input_names()
@@ -76,11 +76,13 @@ class RecordingGui:
 		#link callback function to portchoice
 		self.portchoice.trace('w', self.change_dropdown)
 		choices = {name for name in portnames}
+
+		self.porttitle = Label(master, text="Listening to port:").grid(row=0, column=1,rowspan=2, sticky=S)
 		portmenu = OptionMenu(self.master, self.portchoice, *choices)
-		portmenu.pack()
+		portmenu.grid(row=2, column=1, rowspan = 3, padx=20, sticky=N)
 
 		self.close_button = Button(master, text="Close", command=master.quit)
-		self.close_button.pack()
+		self.close_button.grid()
 		self.recording = False
 
 	def change_dropdown(self, *args):
@@ -327,17 +329,17 @@ class FormGui:
 
 		#field name
 		self.label = Label(master, text="Donnez un titre à la page")
-		self.label.pack()
+		self.label.grid()
 
 		#field content
 		self.titleString = StringVar()
 		self.titleString.set("")
 		self.titleField = Entry(master, textvariable=self.titleString)
-		self.titleField.pack()
+		self.titleField.grid()
 
 		#button
 		self.formbutton = Button(master, text="Ajouter au wiki", command=self.doneForm)
-		self.formbutton.pack()
+		self.formbutton.grid()
 		
 
 	def doneForm(self):

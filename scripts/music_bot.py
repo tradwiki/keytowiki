@@ -197,7 +197,12 @@ class RecordingGui:
 		self.mid.open(filepath, 'wb')
 		self.mid.write()
 		self.mid.close()
-		mystream = music21.midi.translate.midiFileToStream(self.mid)
+		try :
+			mystream = music21.midi.translate.midiFileToStream(self.mid)
+		except Exception as e :
+			print(e)
+			print('Error creating stream from midi file, aborting upload.')
+			return
 		
 		print("Plain :\n")
 		mystream.show('text', addEndTimes=True)

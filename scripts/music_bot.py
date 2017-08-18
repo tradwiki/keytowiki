@@ -118,6 +118,7 @@ class RecordingGui:
 			print("start rec!")
 			self.recording = True	
 			self.whatsthetime(starting = True)
+			self.msgcount = 0
 
 			#open selected port
 			self.inport = mido.open_input(name=self.portchoice.get())
@@ -151,6 +152,7 @@ class RecordingGui:
 			print('Ignoring msg. Not currently recording.')
 			return
 		if (msg.type == 'note_on' or msg.type =='note_off') :
+			self.msgcount = self.msgcount + 1
 			#EXPERIMENTAL VERSION WITH TIMING
 			if (experimental) :
 
@@ -209,10 +211,23 @@ class RecordingGui:
 		#for debug
 		print(m21msg)
 		
+	def recordEndEmpty(self):
+		
+		print("end rec!")
+		#Break clock dial loop
+		self.recording = False
+
+		#close port
+		self.inport.callback = None
+		self.inport.close()
 
 	def recordEnd(self):
 		if not self.recording:
 			print("Not currently recording. Nothing to upload.")
+			return
+		if self.msgcount < 2 :
+			print('Empty recording.')
+			self.recordEndEmpty()
 			return
 
 		print("end rec!")
@@ -236,7 +251,6 @@ class RecordingGui:
 		self.inport.close()
 
 		#Create MIDI file  from mystream
-
 		filepath = os.path.join(startpath, songname)
 		self.mid.open(filepath, 'wb')
 		self.mid.write()

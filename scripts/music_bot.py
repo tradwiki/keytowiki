@@ -48,9 +48,53 @@ class RecordingGui:
 		self.end_button = Button(master, text="End recording", command=self.recordEnd)
 		self.end_button.pack()
 
+		#Port selection
+		portnames = mido.get_input_names()
+
+		#make list of ports that have one of the keywords in their name
+		filteredportnames = [port for port in portnames if True in [portkeyword in port for portkeyword in portkeywords]]
+
+		#choose last port from filtered list by default
+		portname = None
+		if len(filteredportnames) > 0 :
+			portname = filteredportnames[-1]
+			self.inport = mido.open_input(name=portname)
+			self.inport.callback = self.saveMyMessage
+			print('Opened port : ' + portname)
+ 
+		self.portchoice = StringVar(self.master)
+	
+		#There are no ports available
+		if len(portnames) == 0:
+			self.portchoice.set('No available port!')	
+
+		#There are no keyword matching ports is list of available
+		elif portname == None:
+			self.portchoice.set('')	
+
+		#Opened port
+		else:
+			self.portchoice.set(portname)
+		
+		#link callback function to portchoice
+		self.portchoice.trace('w', self.change_dropdown)
+		choices = {name for name in portnames}
+		portmenu = OptionMenu(self.master, self.portchoice, *choices)
+		portmenu.pack()
+
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()
 		self.recording = False
+
+	def change_dropdown(self, *args):
+		#close previous port
+		self.inport.callback = None
+		self.inport.close()
+
+		#open selected
+		self.inport = mido.open_input(name=self.portchoice.get())
+		self.inport.callback = self.saveMyMessage
+		print( self.portchoice.get() )
 
 	def whatsthetime(self, starting):
 		if self.recording == True:
@@ -91,22 +135,6 @@ class RecordingGui:
 
 		self.first=True
 
-		#open ports
-		portnames = mido.get_input_names()
-		print(portnames)
-		
-		#TODO: add way to choose port from gui
-		filteredportnames = [i for i in portnames if True in [portkeyword in i for portkeyword in portkeywords]]
-
-		#choose last port from list of available, this is bad behaviour...
-		if len(filteredportnames) > 0 :
-			portname = filteredportnames[-1]
-			self.inport = mido.open_input(name=portname)
-			self.inport.callback = self.saveMyMessage
-			print('Using port : ' + portname)
-		else:
-			print('Closing application : No available ports')
-			self.master.quit()
 
 
 	def saveMyMessage(self, msg):

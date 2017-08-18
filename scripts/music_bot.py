@@ -204,10 +204,14 @@ class RecordingGui:
 		
 
 	def recordEnd(self):
-		print("end rec!")
+		if not self.recording:
+			print("Not currently recording. Nothing to upload.")
+			return
 
+		print("end rec!")
 		#Break clock dial loop
 		self.recording = False
+
 
 		#END OF TRACK
 		dt = music21.midi.DeltaTime(self.track)

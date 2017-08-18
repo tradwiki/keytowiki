@@ -12,6 +12,7 @@ import webbrowser
 import upload
 from threading import Timer
 from tkinter import *
+from datetime import timedelta
 
 experimental = True
 bpm = 90
@@ -38,7 +39,6 @@ class RecordingGui:
 		
 		#Chronometer
 		self.printedtime = StringVar()
-		self.whatsthetime()
 		self.label = Label(master, textvariable=self.printedtime)
 		self.label.pack()
 
@@ -50,15 +50,27 @@ class RecordingGui:
 
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()
+		self.recording = False
 
-	def whatsthetime(self):
-		self.printedtime.set(time.strftime('%H:%M:%S'))
-		self.master.after(1000, self.whatsthetime)
+	def whatsthetime(self, starting):
+		if self.recording == True:
+
+			if starting == True:
+				self.currentdialtime = timedelta(seconds=0)
+			else:
+				self.currentdialtime = self.currentdialtime + timedelta(seconds=1)
+
+			self.printedtime.set(str(self.currentdialtime))
+			self.master.after(1000, self.whatsthetime, False)
+		else:
+			print("Stopping timer")
 
 
 	def recordStart(self):
 		print("start rec!")
-		
+		self.recording = True	
+		self.whatsthetime(starting = True)
+
 		self.mid = music21.midi.MidiFile()
 		self.mid.ticksPerQuarterNote = 2048
 
@@ -160,6 +172,9 @@ class RecordingGui:
 
 	def recordEnd(self):
 		print("end rec!")
+
+		#Break clock dial loop
+		self.recording = False
 
 		#END OF TRACK
 		dt = music21.midi.DeltaTime(self.track)

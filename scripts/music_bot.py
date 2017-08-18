@@ -111,29 +111,32 @@ class RecordingGui:
 
 
 	def recordStart(self):
-		print("start rec!")
-		self.recording = True	
-		self.whatsthetime(starting = True)
+		if self.recording :
+			print ("Already recording. End recording before starting a new one.")
+		else: 
+			print("start rec!")
+			self.recording = True	
+			self.whatsthetime(starting = True)
 
-		self.mid = music21.midi.MidiFile()
-		self.mid.ticksPerQuarterNote = 2048
+			self.mid = music21.midi.MidiFile()
+			self.mid.ticksPerQuarterNote = 2048
 
-		self.track = music21.midi.MidiTrack(0)
+			self.track = music21.midi.MidiTrack(0)
 
-		mm = music21.tempo.MetronomeMark(number=bpm)
+			mm = music21.tempo.MetronomeMark(number=bpm)
 
-		#create list of tempo indicating events
-		events = music21.midi.translate.tempoToMidiEvents(mm)
+			#create list of tempo indicating events
+			events = music21.midi.translate.tempoToMidiEvents(mm)
 
-		#read mspqn from create events
-		self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
+			#read mspqn from create events
+			self.microSecondsPerQuarterNote = music21.midi.getNumber(events[1].data, len(events[1].data))[0]
 
-		#link structures
-		self.track.events.extend(events)
-		self.mid.tracks.append(self.track)
+			#link structures
+			self.track.events.extend(events)
+			self.mid.tracks.append(self.track)
 
 
-		self.first=True
+			self.first=True
 
 
 

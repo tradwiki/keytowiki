@@ -118,6 +118,10 @@ class RecordingGui:
 			self.recording = True	
 			self.whatsthetime(starting = True)
 
+			#open selected port
+			self.inport = mido.open_input(name=self.portchoice.get())
+			self.inport.callback = self.saveMyMessage
+
 			self.mid = music21.midi.MidiFile()
 			self.mid.ticksPerQuarterNote = 2048
 

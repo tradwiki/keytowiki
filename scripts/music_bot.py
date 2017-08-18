@@ -13,10 +13,10 @@ import upload
 from threading import Timer
 from tkinter import *
 from datetime import timedelta
+import argparse
 
 experimental = True
 bpm = 90
-startpath =  os.getcwd()
 songname = 'new_song.mid'
 scorename = 'new_score.png'
 
@@ -27,9 +27,18 @@ portkeywords = ['loopMIDI', 'Midi']
 
 
 def main():
+	parser = argparse.ArgumentParser(description='Music recording interface for wikis')
+	parser.add_argument('path', nargs='?', help='the path to the folder where you want to save local copies of recording and score. Only the last recording\'s files are kept. Any new recording orverwrites the previous files.', default=os.getcwd())
+
+	args = parser.parse_args()
+	if not os.path.isdir(args.path):
+		print("Error: Specified save directory does not exist. You can leave this blank to save in cwd.")
+		return -1
 	root = Tk()
 	recordingGui = RecordingGui(root)
+	recordingGui.savepath = args.path
 	root.mainloop()
+
 
 class RecordingGui:
 	def __init__(self, master):
@@ -251,7 +260,7 @@ class RecordingGui:
 		self.inport.close()
 
 		#Create MIDI file  from mystream
-		filepath = os.path.join(startpath, songname)
+		filepath = os.path.join(self.savepath, songname)
 		self.mid.open(filepath, 'wb')
 		self.mid.write()
 		self.mid.close()
@@ -317,9 +326,7 @@ class RecordingGui:
 		fmmystream = mmystream.makeNotation()
 		fmmystream.show('text', addEndTimes=True)
 
-
-		#compute filepath - TODO: change to cl argument
-		filepath = os.path.join(startpath, scorename)
+		filepath = os.path.join(self.savepath, scorename)
 		#print('creating score at : ' + filepath + '.png')
 
 		#Create score PNG file

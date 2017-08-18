@@ -10,6 +10,7 @@ from music21 import converter
 from music21.ext.six import StringIO
 import webbrowser
 import upload
+from threading import Timer
 from tkinter import *
 
 experimental = True
@@ -34,6 +35,12 @@ class RecordingGui:
 
 		self.master = master
 		master.title("Record music!")
+		
+		#Chronometer
+		self.printedtime = StringVar()
+		self.whatsthetime()
+		self.label = Label(master, textvariable=self.printedtime)
+		self.label.pack()
 
 		self.greet_button = Button(master, text="Start recording", command=self.recordStart)
 		self.greet_button.pack()
@@ -41,12 +48,13 @@ class RecordingGui:
 		self.greet_button = Button(master, text="End recording", command=self.recordEnd)
 		self.greet_button.pack()
 
-		#Chronometer - TODO
-		# self.label = Label(master, text="Recording time: 00:00")
-		# self.label.pack()
-
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()
+
+	def whatsthetime(self):
+		self.printedtime.set(time.strftime('%H:%M:%S'))
+		self.master.after(1000, self.whatsthetime)
+
 
 	def recordStart(self):
 		print("start rec!")

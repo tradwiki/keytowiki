@@ -49,6 +49,7 @@ class RecordingGui:
 		self.end_button.grid()
 
 		#Port selection
+		self.inport = None
 		portnames = mido.get_input_names()
 
 		#make list of ports that have one of the keywords in their name
@@ -86,9 +87,10 @@ class RecordingGui:
 		self.recording = False
 
 	def change_dropdown(self, *args):
-		#close previous port
-		self.inport.callback = None
-		self.inport.close()
+		if not (self.inport == None):
+			#close previous port
+			self.inport.callback = None
+			self.inport.close()
 
 		#open selected
 		self.inport = mido.open_input(name=self.portchoice.get())
@@ -145,6 +147,9 @@ class RecordingGui:
 
 
 	def saveMyMessage(self, msg):
+		if not self.recording :
+			print('Ignoring msg. Not currently recording.')
+			return
 		if (msg.type == 'note_on' or msg.type =='note_off') :
 			#EXPERIMENTAL VERSION WITH TIMING
 			if (experimental) :

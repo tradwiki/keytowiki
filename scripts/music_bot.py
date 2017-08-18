@@ -42,11 +42,11 @@ class RecordingGui:
 		self.label = Label(master, textvariable=self.printedtime)
 		self.label.pack()
 
-		self.greet_button = Button(master, text="Start recording", command=self.recordStart)
-		self.greet_button.pack()
+		self.start_button = Button(master, text="Start recording", command=self.recordStart)
+		self.start_button.pack()
 
-		self.greet_button = Button(master, text="End recording", command=self.recordEnd)
-		self.greet_button.pack()
+		self.end_button = Button(master, text="End recording", command=self.recordEnd)
+		self.end_button.pack()
 
 		self.close_button = Button(master, text="Close", command=master.quit)
 		self.close_button.pack()

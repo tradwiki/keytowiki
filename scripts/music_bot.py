@@ -19,7 +19,7 @@ experimental = True
 bpm = 90
 songname = 'temp.mid'
 scorename = 'temp.png'
-
+noports = False
 
 #Soon to be removed...
 #Need to add port selection to the GUI
@@ -74,6 +74,8 @@ class RecordingGui:
 		#There are no ports available
 		if len(portnames) == 0:
 			self.portchoice.set('No available port!')	
+			global noports
+			noports = True
 
 		#There are no keyword matching ports is list of available
 		elif portname == None:
@@ -85,10 +87,10 @@ class RecordingGui:
 		
 		#link callback function to portchoice
 		self.portchoice.trace('w', self.change_dropdown)
-		choices = [name for name in portnames]
+		choices = {name for name in portnames}
 
 		self.porttitle = Label(master, text="Listening to port:").grid(row=0, column=1,rowspan=2, sticky=S)
-		portmenu = OptionMenu(self.master, self.portchoice, tuple(choices))
+		portmenu = OptionMenu(self.master, self.portchoice, *choices)
 		portmenu.grid(row=2, column=1, rowspan = 3, padx=20, sticky=N)
 
 		self.close_button = Button(master, text="Close", command=master.quit)
@@ -100,6 +102,8 @@ class RecordingGui:
 			#close previous port
 			self.inport.callback = None
 			self.inport.close()
+		global noports
+		noports = False
 
 		#open selected
 		self.inport = mido.open_input(name=self.portchoice.get())
@@ -123,6 +127,8 @@ class RecordingGui:
 	def recordStart(self):
 		if self.recording :
 			print ("Already recording. End recording before starting a new one.")
+		elif noports:
+			print ("No ports available.")
 		else: 
 			print("start rec!")
 			self.recording = True	

@@ -62,9 +62,10 @@ class RecordingGui:
 		#Port selection
 		self.inport = None
 		portnames = mido.get_input_names()
+
 		self.portchoice = StringVar(self.master)
 		portname = None
-
+		print('listed ports')
 		#There are no ports available
 		if len(portnames) == 0:
 			choices = {"None"}

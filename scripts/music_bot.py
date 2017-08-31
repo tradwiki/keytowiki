@@ -73,7 +73,7 @@ class RecordingGui:
 	
 		#There are no ports available
 		if len(portnames) == 0:
-			self.portchoice.set('No available port!')	
+			self.portchoice.set('')	
 			global noports
 			noports = True
 
@@ -102,6 +102,14 @@ class RecordingGui:
 			#close previous port
 			self.inport.callback = None
 			self.inport.close()
+
+		print(self.portchoice.get())
+		#make sure the selection contains something
+		if (self.portchoice.get == ''):
+			print("no ports to open")
+			return
+		
+		#mark global variable in case we just discovered the new port
 		global noports
 		noports = False
 

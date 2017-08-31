@@ -60,25 +60,25 @@ class RecordingGui:
 		#Port selection
 		self.inport = None
 		portnames = mido.get_input_names()
-
-		#make list of ports that have one of the keywords in their name
-		filteredportnames = [port for port in portnames if True in [portkeyword in port for portkeyword in portkeywords]]
-
-		#choose last port from filtered list by default
-		portname = None
-		if len(filteredportnames) > 0 :
-			portname = filteredportnames[-1]
- 
 		self.portchoice = StringVar(self.master)
-	
+		portname = None
+
 		#There are no ports available
 		if len(portnames) == 0:
-			self.portchoice.set('')	
+			choices = {}
 			global noports
 			noports = True
+		else: 
+			choices = {name for name in portnames}
+			#make list of ports that have one of the keywords in their name
+			filteredportnames = [port for port in portnames if True in [portkeyword in port for portkeyword in portkeywords]]
 
-		#There are no keyword matching ports is list of available
-		elif portname == None:
+			#choose last port from filtered list by default
+			if len(filteredportnames) > 0 :
+				portname = filteredportnames[-1]
+
+		#There are no keyword matching ports in list or simply empty list
+		if portname == None:
 			self.portchoice.set('')	
 
 		#Opened port
@@ -87,7 +87,6 @@ class RecordingGui:
 		
 		#link callback function to portchoice
 		self.portchoice.trace('w', self.change_dropdown)
-		choices = {name for name in portnames}
 
 		self.porttitle = Label(master, text="Listening to port:").grid(row=0, column=1,rowspan=2, sticky=S)
 		portmenu = OptionMenu(self.master, self.portchoice, *choices)
@@ -103,7 +102,6 @@ class RecordingGui:
 			self.inport.callback = None
 			self.inport.close()
 
-		print(self.portchoice.get())
 		#make sure the selection contains something
 		if (self.portchoice.get == ''):
 			print("no ports to open")

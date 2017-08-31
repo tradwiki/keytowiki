@@ -65,7 +65,7 @@ class RecordingGui:
 
 		#There are no ports available
 		if len(portnames) == 0:
-			choices = {}
+			choices = {"None"}
 			global noports
 			noports = True
 		else: 
@@ -103,7 +103,7 @@ class RecordingGui:
 			self.inport.close()
 
 		#make sure the selection contains something
-		if (self.portchoice.get == ''):
+		if (self.portchoice.get() == '' or self.portchoice.get() == 'None'):
 			print("no ports to open")
 			return
 		

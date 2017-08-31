@@ -57,6 +57,8 @@ class RecordingGui:
 		self.end_button = Button(master, text="End recording", command=self.recordEnd)
 		self.end_button.grid()
 
+		print('about to choose ports')
+
 		#Port selection
 		self.inport = None
 		portnames = mido.get_input_names()

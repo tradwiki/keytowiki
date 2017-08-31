@@ -85,10 +85,10 @@ class RecordingGui:
 		
 		#link callback function to portchoice
 		self.portchoice.trace('w', self.change_dropdown)
-		choices = {name for name in portnames}
+		choices = [name for name in portnames]
 
 		self.porttitle = Label(master, text="Listening to port:").grid(row=0, column=1,rowspan=2, sticky=S)
-		portmenu = OptionMenu(self.master, self.portchoice, *choices)
+		portmenu = OptionMenu(self.master, self.portchoice, tuple(choices))
 		portmenu.grid(row=2, column=1, rowspan = 3, padx=20, sticky=N)
 
 		self.close_button = Button(master, text="Close", command=master.quit)

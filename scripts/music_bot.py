@@ -79,7 +79,7 @@ class RecordingGui:
 
 		#There are no keyword matching ports in list or simply empty list
 		if portname == None:
-			self.portchoice.set('')	
+			self.portchoice.set('None')	
 
 		#Opened port
 		else:
